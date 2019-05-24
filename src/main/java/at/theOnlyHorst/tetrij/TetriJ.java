@@ -1,6 +1,6 @@
 package at.theOnlyHorst.tetrij;
 
-import org.lwjgl.glfw.GLFW;
+import at.theOnlyHorst.tetrij.engine.GameEngine;
 
 import static org.lwjgl.glfw.GLFW.*;
 import static org.lwjgl.opengl.GL11.GL_TRUE;
@@ -8,7 +8,7 @@ import static org.lwjgl.opengl.GL11.GL_TRUE;
 public class TetriJ implements Runnable {
 
     private static TetriJ mainGame;
-    private long window;
+    public static long window;
 
     private static final int WINDOW_WIDTH = 500;
     private static final int WINDOW_HEIGHT = 500;
@@ -16,6 +16,9 @@ public class TetriJ implements Runnable {
     private boolean running;
 
     private Thread thread;
+
+    private GameEngine engine;
+    private static final int MS_PER_FRAME = 16;
 
     public static TetriJ getTetriJ()
     {
@@ -44,6 +47,7 @@ public class TetriJ implements Runnable {
 
     private void init()
     {
+        engine = GameEngine.initEngine();
         if(!glfwInit())
         {
 
@@ -66,35 +70,57 @@ public class TetriJ implements Runnable {
     @Override
     public void run() {
         init();
+
+        long prevTime = System.currentTimeMillis();
+        long lag = 0;
         while (running)
         {
-            update();
-            render();
+            long currentTime = System.currentTimeMillis();
+            long elapsed = currentTime - prevTime;
+            lag += elapsed;
+            processInputs();
+            while (lag>MS_PER_FRAME) {
+                update();
+                lag -= MS_PER_FRAME;
+            }
+            render(lag/MS_PER_FRAME);
 
             if(glfwWindowShouldClose(window))
             {
                 running = false;
             }
-            sleep();
+            //sleep(start + MS_PER_FRAME - System.currentTimeMillis());
         }
 
+    }
+
+    private void processInputs() {
     }
 
 
     private void update()
     {
-        glfwPollEvents();
+
+
+
+        engine.update();
     }
 
-    private void render()
+    private void render(long deltaTime)
     {
-        glfwSwapBuffers(window);
+
+
+        engine.render(deltaTime);
     }
 
-    private void sleep()
+    private void sleep(long milis)
     {
+        if(milis<0)
+        {
+            return;
+        }
         try {
-            Thread.sleep(20);
+            Thread.sleep(milis);
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
