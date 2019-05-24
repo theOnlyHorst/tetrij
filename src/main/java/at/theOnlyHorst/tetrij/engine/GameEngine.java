@@ -1,6 +1,8 @@
 package at.theOnlyHorst.tetrij.engine;
 
 import at.theOnlyHorst.tetrij.TetriJ;
+import at.theOnlyHorst.tetrij.gameTasks.AbstractLogicTask;
+import at.theOnlyHorst.tetrij.gameTasks.AbstractRenderTask;
 import at.theOnlyHorst.tetrij.gameTasks.LogicTask;
 import at.theOnlyHorst.tetrij.gameTasks.RenderTask;
 
@@ -12,9 +14,9 @@ import static org.lwjgl.glfw.GLFW.glfwSwapBuffers;
 
 public class GameEngine {
 
-    private  List<LogicTask> logicTasks;
+    private  List<AbstractLogicTask> logicTasks;
 
-    private  List<RenderTask> renderTasks;
+    private  List<AbstractRenderTask> renderTasks;
 
     private static GameEngine instance;
 
@@ -26,18 +28,18 @@ public class GameEngine {
 
     public static GameEngine initEngine()
     {
-        if(instance==null)
+        if(instance!=null)
             throw new RuntimeException("Attempted to initialize GameEngine for a second time");
         instance = new GameEngine();
         return instance;
     }
 
-    public static void addLogicTask(LogicTask task)
+    public static void addLogicTask(AbstractLogicTask task)
     {
         instance.logicTasks.add(task);
     }
 
-    public static void addRenderTask(RenderTask task)
+    public static void addRenderTask(AbstractRenderTask task)
     {
         instance.renderTasks.add(task);
     }
@@ -45,14 +47,14 @@ public class GameEngine {
     public void update()
     {
         glfwPollEvents();
-        logicTasks.forEach(LogicTask::update);
+        logicTasks.forEach(AbstractLogicTask::run);
     }
 
 
-    public void render(long deltaTime)
+    public void render(double lagDelta,long deltaTime)
     {
         glfwSwapBuffers(TetriJ.window);
-        renderTasks.forEach(t->t.render(deltaTime));
+        renderTasks.forEach(t-> t.run(lagDelta,deltaTime));
     }
 
 

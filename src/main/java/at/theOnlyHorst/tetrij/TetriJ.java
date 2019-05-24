@@ -1,6 +1,8 @@
 package at.theOnlyHorst.tetrij;
 
 import at.theOnlyHorst.tetrij.engine.GameEngine;
+import at.theOnlyHorst.tetrij.gameTasks.FPSCounter;
+import at.theOnlyHorst.tetrij.gameTasks.TickCounter;
 
 import static org.lwjgl.glfw.GLFW.*;
 import static org.lwjgl.opengl.GL11.GL_TRUE;
@@ -18,7 +20,7 @@ public class TetriJ implements Runnable {
     private Thread thread;
 
     private GameEngine engine;
-    private static final int MS_PER_FRAME = 16;
+    private static final int MS_PER_UPDATE = 16;
 
     public static TetriJ getTetriJ()
     {
@@ -48,6 +50,10 @@ public class TetriJ implements Runnable {
     private void init()
     {
         engine = GameEngine.initEngine();
+        //GameEngine.addLogicTask(new TickCounter());
+        GameEngine.addRenderTask(new FPSCounter());
+
+
         if(!glfwInit())
         {
 
@@ -78,12 +84,13 @@ public class TetriJ implements Runnable {
             long currentTime = System.currentTimeMillis();
             long elapsed = currentTime - prevTime;
             lag += elapsed;
+            prevTime = currentTime;
             processInputs();
-            while (lag>MS_PER_FRAME) {
+            while (lag>=MS_PER_UPDATE) {
                 update();
-                lag -= MS_PER_FRAME;
+                lag -= MS_PER_UPDATE;
             }
-            render(lag/MS_PER_FRAME);
+            render(lag/MS_PER_UPDATE,elapsed);
 
             if(glfwWindowShouldClose(window))
             {
@@ -100,17 +107,12 @@ public class TetriJ implements Runnable {
 
     private void update()
     {
-
-
-
         engine.update();
     }
 
-    private void render(long deltaTime)
+    private void render(double lagDelta,long deltaTime)
     {
-
-
-        engine.render(deltaTime);
+        engine.render(lagDelta,deltaTime);
     }
 
     private void sleep(long milis)
