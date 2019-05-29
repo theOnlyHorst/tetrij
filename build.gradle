@@ -2,6 +2,7 @@ plugins {
     id 'java'
     id 'application'
     id 'maven'
+    id "com.github.johnrengelman.shadow" version "4.0.2"
 }
 
 group 'at.theOnlyHorst'

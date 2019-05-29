@@ -53,8 +53,8 @@ public class GameEngine {
 
     public void render(double lagDelta,long deltaTime)
     {
-        glfwSwapBuffers(TetriJ.window);
         renderTasks.forEach(t-> t.run(lagDelta,deltaTime));
+        glfwSwapBuffers(TetriJ.window);
     }
 
 

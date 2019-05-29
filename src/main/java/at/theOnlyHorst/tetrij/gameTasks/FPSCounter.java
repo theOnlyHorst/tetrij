@@ -12,7 +12,7 @@ public class FPSCounter extends AbstractRenderTask {
 
     @Override
     public void render(double lagDelta,long deltaTime) {
-        frames++;
+
         if(timestamp>=1000)
         {
             System.out.println(frames);
@@ -22,6 +22,7 @@ public class FPSCounter extends AbstractRenderTask {
         else
         {
             timestamp+=deltaTime;
+            frames++;
         }
     }
 }

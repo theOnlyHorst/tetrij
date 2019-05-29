@@ -3,6 +3,8 @@ package at.theOnlyHorst.tetrij;
 import at.theOnlyHorst.tetrij.engine.GameEngine;
 import at.theOnlyHorst.tetrij.gameTasks.FPSCounter;
 import at.theOnlyHorst.tetrij.gameTasks.TickCounter;
+import org.lwjgl.opengl.GL;
+import org.lwjgl.opengl.GLCapabilities;
 
 import static org.lwjgl.glfw.GLFW.*;
 import static org.lwjgl.opengl.GL11.GL_TRUE;
@@ -12,8 +14,8 @@ public class TetriJ implements Runnable {
     private static TetriJ mainGame;
     public static long window;
 
-    private static final int WINDOW_WIDTH = 500;
-    private static final int WINDOW_HEIGHT = 500;
+    private static final int WINDOW_WIDTH = 700;
+    private static final int WINDOW_HEIGHT = 700;
 
     private boolean running;
 
@@ -63,7 +65,10 @@ public class TetriJ implements Runnable {
         glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
         glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
         glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+        
+
         window = glfwCreateWindow(WINDOW_WIDTH, WINDOW_HEIGHT, "TetriJ", 0, 0);
+
         if(window == 0) {
             throw new RuntimeException("Failed to create window");
         }

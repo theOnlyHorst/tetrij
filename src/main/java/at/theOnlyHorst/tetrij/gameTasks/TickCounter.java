@@ -13,14 +13,15 @@ public class TickCounter extends AbstractLogicTask {
 
     @Override
     public void update() {
-
-        ticks++;
         if(System.currentTimeMillis()-timeStamp>=1000)
         {
             System.out.println(ticks);
             ticks = 0;
             timeStamp = System.currentTimeMillis();
         }
+        else
+        ticks++;
+
 
     }
 }
