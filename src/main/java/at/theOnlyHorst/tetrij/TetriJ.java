@@ -2,20 +2,28 @@ package at.theOnlyHorst.tetrij;
 
 import at.theOnlyHorst.tetrij.engine.GameEngine;
 import at.theOnlyHorst.tetrij.gameTasks.FPSCounter;
-import at.theOnlyHorst.tetrij.gameTasks.TickCounter;
+import at.theOnlyHorst.tetrij.gameTasks.RenderScreen;
+import org.joml.Matrix4f;
 import org.lwjgl.opengl.GL;
-import org.lwjgl.opengl.GLCapabilities;
+import org.lwjgl.opengl.GL30;
 
 import static org.lwjgl.glfw.GLFW.*;
-import static org.lwjgl.opengl.GL11.GL_TRUE;
+import static org.lwjgl.opengl.GL11.*;
+import static org.lwjgl.opengl.GL20.GL_FRAGMENT_SHADER;
+import static org.lwjgl.opengl.GL20.GL_VERTEX_SHADER;
+import static org.lwjgl.opengl.GL40.GL_TRUE;
 
 public class TetriJ implements Runnable {
 
     private static TetriJ mainGame;
     public static long window;
 
-    private static final int WINDOW_WIDTH = 700;
-    private static final int WINDOW_HEIGHT = 700;
+    public static final int WINDOW_WIDTH = 700;
+    public static final int WINDOW_HEIGHT = 700;
+
+    private static boolean requiredRerender;
+
+    public static Matrix4f projectionMat;
 
     private boolean running;
 
@@ -54,6 +62,7 @@ public class TetriJ implements Runnable {
         engine = GameEngine.initEngine();
         //GameEngine.addLogicTask(new TickCounter());
         GameEngine.addRenderTask(new FPSCounter());
+        GameEngine.addRenderTask(new RenderScreen());
 
 
         if(!glfwInit())
@@ -75,6 +84,29 @@ public class TetriJ implements Runnable {
 
         glfwMakeContextCurrent(window);
         glfwShowWindow(window);
+        GL.createCapabilities();
+
+        glEnable(GL_TEXTURE_2D);
+        glDisable(GL_DEPTH_TEST);
+
+        int vShader = GL30.glCreateShader(GL_VERTEX_SHADER);
+        int fShader =  GL30.glCreateShader(GL_FRAGMENT_SHADER);
+
+        String[] vShaderCode = {"#version 330 core","layout(location = 0) in vec3 vertexPosition_modelspace;","void main(){","  gl_Position.xyz = vertexPosition_modelspace;\n" +
+                "  gl_Position.w = 1.0;\n" +
+                "}"};
+        String fShaderCode = "#version 330 core\n" +
+                "out vec3 color;\n" +
+                "void main(){\n" +
+                "  color = vec3(1,0,0);\n" +
+                "}";
+
+        //glMatrixMode(GL_PROJECTION);
+        //lLoadIdentity();
+        //glOrtho(0, TetriJ.WINDOW_WIDTH, TetriJ.WINDOW_HEIGHT, 0, -1, 1);
+        //glMatrixMode(GL_MODELVIEW);
+
+        requiredRerender = true;
 
     }
 
@@ -118,6 +150,12 @@ public class TetriJ implements Runnable {
     private void render(double lagDelta,long deltaTime)
     {
         engine.render(lagDelta,deltaTime);
+        requiredRerender=false;
+    }
+
+    public static boolean requireRerender()
+    {
+        return requiredRerender;
     }
 
     private void sleep(long milis)

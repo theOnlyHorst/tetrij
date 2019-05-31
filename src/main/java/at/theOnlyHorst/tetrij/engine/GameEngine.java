@@ -18,6 +18,8 @@ public class GameEngine {
 
     private  List<AbstractRenderTask> renderTasks;
 
+
+
     private static GameEngine instance;
 
     private GameEngine()
@@ -55,7 +57,11 @@ public class GameEngine {
     {
         renderTasks.forEach(t-> t.run(lagDelta,deltaTime));
         glfwSwapBuffers(TetriJ.window);
+
     }
+
+
+
 
 
 }

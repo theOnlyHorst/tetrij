@@ -8,7 +8,7 @@ plugins {
 group 'at.theOnlyHorst'
 version '0.1-Dev'
 
-sourceCompatibility = 1.8
+sourceCompatibility = 1.11
 project.ext.lwjglVersion = "3.2.2"
 project.ext.jomlVersion = "1.9.14"
 project.ext.lwjglNatives = "natives-windows"
