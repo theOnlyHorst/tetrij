@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<Resources>
+    <Shaders path="shaders/">
+        <Resource name="DefaultVShader" path="DefVShader.glsl"/>
+        <Resource name="DefaultFShader" path="DefFShader.glsl"/>
+    </Shaders>
+
+
+
+</Resources>

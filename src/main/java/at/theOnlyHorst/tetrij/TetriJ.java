@@ -1,16 +1,22 @@
 package at.theOnlyHorst.tetrij;
 
 import at.theOnlyHorst.tetrij.engine.GameEngine;
+import at.theOnlyHorst.tetrij.engine.ResourceManager;
 import at.theOnlyHorst.tetrij.gameTasks.FPSCounter;
 import at.theOnlyHorst.tetrij.gameTasks.RenderScreen;
 import org.joml.Matrix4f;
 import org.lwjgl.opengl.GL;
 import org.lwjgl.opengl.GL30;
+import org.xml.sax.SAXException;
+
+import javax.xml.parsers.ParserConfigurationException;
+import java.io.IOException;
 
 import static org.lwjgl.glfw.GLFW.*;
 import static org.lwjgl.opengl.GL11.*;
-import static org.lwjgl.opengl.GL20.GL_FRAGMENT_SHADER;
-import static org.lwjgl.opengl.GL20.GL_VERTEX_SHADER;
+import static org.lwjgl.opengl.GL20.*;
+import static org.lwjgl.opengl.GL30.glBindVertexArray;
+import static org.lwjgl.opengl.GL30.glGenVertexArrays;
 import static org.lwjgl.opengl.GL40.GL_TRUE;
 
 public class TetriJ implements Runnable {
@@ -40,7 +46,6 @@ public class TetriJ implements Runnable {
 
     public static void main(String[] args)
     {
-        //SharedLibraryLoader.load();
         mainGame = new TetriJ();
         mainGame.start();
     }
@@ -60,6 +65,19 @@ public class TetriJ implements Runnable {
     private void init()
     {
         engine = GameEngine.initEngine();
+        try {
+            ResourceManager.initResManager();
+        } catch (ParserConfigurationException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        } catch (SAXException e) {
+            e.printStackTrace();
+        }
+
+
+
+
         //GameEngine.addLogicTask(new TickCounter());
         GameEngine.addRenderTask(new FPSCounter());
         GameEngine.addRenderTask(new RenderScreen());
@@ -88,18 +106,20 @@ public class TetriJ implements Runnable {
 
         glEnable(GL_TEXTURE_2D);
         glDisable(GL_DEPTH_TEST);
+        glEnable(GL_QUADS);
 
-        int vShader = GL30.glCreateShader(GL_VERTEX_SHADER);
-        int fShader =  GL30.glCreateShader(GL_FRAGMENT_SHADER);
 
-        String[] vShaderCode = {"#version 330 core","layout(location = 0) in vec3 vertexPosition_modelspace;","void main(){","  gl_Position.xyz = vertexPosition_modelspace;\n" +
-                "  gl_Position.w = 1.0;\n" +
-                "}"};
-        String fShaderCode = "#version 330 core\n" +
-                "out vec3 color;\n" +
-                "void main(){\n" +
-                "  color = vec3(1,0,0);\n" +
-                "}";
+        int vao = glGenVertexArrays();
+        glBindVertexArray(vao);
+
+
+        int shaderProg = loadShaders();
+
+        glUseProgram(shaderProg);
+
+
+
+
 
         //glMatrixMode(GL_PROJECTION);
         //lLoadIdentity();
@@ -109,6 +129,50 @@ public class TetriJ implements Runnable {
         requiredRerender = true;
 
     }
+
+    private int loadShaders()
+    {
+
+        int vShader = GL30.glCreateShader(GL_VERTEX_SHADER);
+        int fShader =  GL30.glCreateShader(GL_FRAGMENT_SHADER);
+
+        String vShaderCode = ResourceManager.getShader("DefaultVShader");
+        String fShaderCode = ResourceManager.getShader("DefaultFShader");
+
+        glShaderSource(vShader,vShaderCode);
+        glCompileShader(vShader);
+
+        String vShaderInfo = glGetShaderInfoLog(vShader);
+
+        System.out.println(vShaderInfo);
+
+
+        glShaderSource(fShader,fShaderCode);
+        glCompileShader(fShader);
+
+        String fShaderInfo = glGetShaderInfoLog(fShader);
+
+        System.out.println(fShaderInfo);
+
+        int progId = glCreateProgram();
+        glAttachShader(progId,vShader);
+
+        glAttachShader(progId,fShader);
+
+        glLinkProgram(progId);
+
+        glDetachShader(progId,vShader);
+        glDetachShader(progId,fShader);
+
+        glDeleteShader(vShader);
+        glDeleteShader(fShader);
+
+
+
+        return progId;
+    }
+
+
 
     @Override
     public void run() {
