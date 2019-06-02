@@ -5,8 +5,11 @@ import at.theOnlyHorst.tetrij.engine.ResourceManager;
 import at.theOnlyHorst.tetrij.gameTasks.FPSCounter;
 import at.theOnlyHorst.tetrij.gameTasks.RenderScreen;
 import org.joml.Matrix4f;
+import org.lwjgl.glfw.GLFWErrorCallback;
 import org.lwjgl.opengl.GL;
 import org.lwjgl.opengl.GL30;
+import org.lwjgl.opengl.GLUtil;
+import org.lwjgl.system.Callback;
 import org.xml.sax.SAXException;
 
 import javax.xml.parsers.ParserConfigurationException;
@@ -37,6 +40,10 @@ public class TetriJ implements Runnable {
 
     private GameEngine engine;
     private static final int MS_PER_UPDATE = 16;
+
+
+
+    private int shaderProg;
 
     public static TetriJ getTetriJ()
     {
@@ -92,7 +99,8 @@ public class TetriJ implements Runnable {
         glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
         glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
         glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-        
+        glfwWindowHint(GLFW_OPENGL_DEBUG_CONTEXT, GLFW_TRUE);
+
 
         window = glfwCreateWindow(WINDOW_WIDTH, WINDOW_HEIGHT, "TetriJ", 0, 0);
 
@@ -104,16 +112,23 @@ public class TetriJ implements Runnable {
         glfwShowWindow(window);
         GL.createCapabilities();
 
-        glEnable(GL_TEXTURE_2D);
-        glDisable(GL_DEPTH_TEST);
-        glEnable(GL_QUADS);
+        Callback debugProc = GLUtil.setupDebugMessageCallback(); // may return null if the debug mode is not available
+
+// cleanup
+        if ( debugProc == null ) {
+            throw new RuntimeException("Debug callback couldn't be created");
+
+        }
+
+        //glEnable(GL_TEXTURE_2D);
+        //glDisable(GL_DEPTH_TEST);
 
 
         int vao = glGenVertexArrays();
         glBindVertexArray(vao);
 
 
-        int shaderProg = loadShaders();
+        shaderProg = loadShaders();
 
         glUseProgram(shaderProg);
 
@@ -133,8 +148,8 @@ public class TetriJ implements Runnable {
     private int loadShaders()
     {
 
-        int vShader = GL30.glCreateShader(GL_VERTEX_SHADER);
-        int fShader =  GL30.glCreateShader(GL_FRAGMENT_SHADER);
+        int vShader = glCreateShader(GL_VERTEX_SHADER);
+        int fShader =  glCreateShader(GL_FRAGMENT_SHADER);
 
         String vShaderCode = ResourceManager.getShader("DefaultVShader");
         String fShaderCode = ResourceManager.getShader("DefaultFShader");
@@ -233,5 +248,8 @@ public class TetriJ implements Runnable {
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
+    }
+    public int getShaderProg() {
+        return shaderProg;
     }
 }

@@ -1,29 +1,34 @@
 package at.theOnlyHorst.tetrij.engine;
 
+import at.theOnlyHorst.tetrij.renderer.Texture;
+import at.theOnlyHorst.tetrij.util.DDSParser;
 import org.w3c.dom.*;
 import org.xml.sax.SAXException;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
+import java.io.*;
+import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
 import java.util.HashMap;
 import java.util.Map;
 
 public class ResourceManager {
 
+
     private ResourceManager(){
     }
 
     private static Map<String,String> shaders;
+    private static Map<String, Texture> textures;
     //TODO implement Textures List
 
 
 
     public static void initResManager() throws ParserConfigurationException, IOException, SAXException {
         shaders = new HashMap<>();
+        textures = new HashMap<>();
 
         DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
         DocumentBuilder builder = factory.newDocumentBuilder();
@@ -34,13 +39,23 @@ public class ResourceManager {
 
         Node shadersN = root.getElementsByTagName("Shaders").item(0);
 
-        readResourceTypeDOM(shaders,shadersN);
+        Map <String,String> pathMapSh = readResourceTypeDOM(shadersN);
+        pathMapSh.forEach((name,path) -> shaders.put(name,readResFileString(path)));
+
+        Node texturesN = root.getElementsByTagName("Textures").item(0);
+
+        Map<String,String> pathMapTx = readResourceTypeDOM(texturesN);
+
+        pathMapTx.forEach((name,path)-> textures.put(name,readTextureFile(path)));
+
 
 
     }
 
-    private static void readResourceTypeDOM(Map<String,String> resultMap,Node parent)
+    //returns a Map with name and path
+    private static Map<String,String> readResourceTypeDOM(Node parent)
     {
+        Map<String,String> resultMap = new HashMap<>();
         if (parent.getNodeType() == Node.ELEMENT_NODE) {
             Element parentE = (Element) parent;
             String parentPath = parentE.getAttribute("path");
@@ -54,11 +69,12 @@ public class ResourceManager {
                     String name = currentE.getAttribute("name");
                     String pathE = currentE.getAttribute("path");
 
-                    resultMap.put(name,readResFileString(parentPath+pathE));
+                    resultMap.put(name,parentPath+pathE);
                 }
             }
 
         }
+        return resultMap;
     }
 
 
@@ -80,11 +96,20 @@ public class ResourceManager {
         return combined;
     }
 
+    private static Texture readTextureFile(String path)
+    {
+        return DDSParser.readDDS(path);
+    }
+
+
+
 
     public static String getShader(String name)
     {
         return shaders.get(name);
     }
+
+    public static Texture getTexture(String name) {return textures.get(name);}
 
 
 }
