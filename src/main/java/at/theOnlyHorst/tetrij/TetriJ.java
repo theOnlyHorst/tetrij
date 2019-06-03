@@ -4,6 +4,8 @@ import at.theOnlyHorst.tetrij.engine.GameEngine;
 import at.theOnlyHorst.tetrij.engine.ResourceManager;
 import at.theOnlyHorst.tetrij.gameTasks.FPSCounter;
 import at.theOnlyHorst.tetrij.gameTasks.RenderScreen;
+import at.theOnlyHorst.tetrij.renderer.GameSprite;
+import at.theOnlyHorst.tetrij.renderer.Renderer;
 import at.theOnlyHorst.tetrij.renderer.Screen;
 import org.joml.Matrix4f;
 import org.lwjgl.glfw.GLFWErrorCallback;
@@ -18,6 +20,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
+import static org.lwjgl.glfw.Callbacks.glfwFreeCallbacks;
 import static org.lwjgl.glfw.GLFW.*;
 import static org.lwjgl.opengl.GL11.*;
 import static org.lwjgl.opengl.GL20.*;
@@ -25,7 +28,7 @@ import static org.lwjgl.opengl.GL30.glBindVertexArray;
 import static org.lwjgl.opengl.GL30.glGenVertexArrays;
 import static org.lwjgl.opengl.GL40.GL_TRUE;
 
-public class TetriJ implements Runnable {
+public class TetriJ {
 
     private static TetriJ mainGame;
     public static long window;
@@ -71,13 +74,13 @@ public class TetriJ implements Runnable {
     public void start()
     {
         running = true;
-        thread = new Thread(this,"Game");
-        thread.start();
+        run();
     }
 
     private void init()
     {
         engine = GameEngine.initEngine();
+        Renderer.createRenderer();
         try {
             ResourceManager.initResManager();
         } catch (ParserConfigurationException e) {
@@ -87,6 +90,8 @@ public class TetriJ implements Runnable {
         } catch (SAXException e) {
             e.printStackTrace();
         }
+
+
 
 
 
@@ -119,6 +124,10 @@ public class TetriJ implements Runnable {
         GL.createCapabilities();
 
         Callback debugProc = GLUtil.setupDebugMessageCallback(); // may return null if the debug mode is not available
+
+        Screen main = new Screen(1);
+        main.getSpriteList().add(new GameSprite(0,0,0.5f,0.5f,ResourceManager.getTexture("bgGrid")));
+        TetriJ.getTetriJ().activeScreen = main;
 
 // cleanup
         if ( debugProc == null ) {
@@ -193,9 +202,6 @@ public class TetriJ implements Runnable {
         return progId;
     }
 
-
-
-    @Override
     public void run() {
         init();
 
@@ -219,7 +225,10 @@ public class TetriJ implements Runnable {
                 running = false;
             }
         }
+        glfwFreeCallbacks(window);
+        glfwDestroyWindow(window);
 
+        glfwTerminate();
     }
 
     private void processInputs() {

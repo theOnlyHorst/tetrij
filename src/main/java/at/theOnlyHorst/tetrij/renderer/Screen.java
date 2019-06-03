@@ -19,8 +19,6 @@ public class Screen
         return spriteList;
     }
 
-    public void draw()
-    {
-        spriteList.forEach(GameSprite::draw);
-    }
+
+    public void draw() {spriteList.forEach(sprite -> {Renderer.getInstance().queueSprite(sprite);sprite.init();});}
 }

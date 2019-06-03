@@ -15,6 +15,8 @@ public class Renderer {
 
     private int tbao;
 
+    private int texSamplerId;
+
     private Renderer()
     {
         activeSprites = new ArrayList<>();
@@ -62,5 +64,17 @@ public class Renderer {
     public int getSpriteAmount()
     {
         return activeSprites.size();
+    }
+
+    public int getTexSamplerId() {
+        return texSamplerId;
+    }
+
+    public void setTexSamplerId(int texSamplerId) {
+        this.texSamplerId = texSamplerId;
+    }
+    public void render()
+    {
+        activeSprites.forEach(GameSprite::draw);
     }
 }

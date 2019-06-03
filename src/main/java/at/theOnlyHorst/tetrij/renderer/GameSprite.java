@@ -7,7 +7,6 @@ import java.nio.ByteBuffer;
 
 import static org.lwjgl.opengl.EXTTextureCompressionS3TC.GL_COMPRESSED_RGBA_S3TC_DXT1_EXT;
 import static org.lwjgl.opengl.GL11.*;
-import static org.lwjgl.opengl.GL11.GL_TEXTURE_2D;
 import static org.lwjgl.opengl.GL12.GL_TEXTURE_MAX_LEVEL;
 import static org.lwjgl.opengl.GL13.glCompressedTexImage2D;
 import static org.lwjgl.opengl.GL15.*;
@@ -16,8 +15,12 @@ import static org.lwjgl.opengl.GL20.glDisableVertexAttribArray;
 
 public class GameSprite implements IDrawable {
 
-    private int x;
-    private int y;
+    private float x;
+    private float y;
+
+    private float scaleX;
+    private float scaleY;
+
 
     int texId;
 
@@ -35,18 +38,20 @@ public class GameSprite implements IDrawable {
     private Texture tex;
 
 
-    public GameSprite(int x, int y, Texture tex)
+    public GameSprite(float x, float y,float scaleX,float scaleY, Texture tex)
     {
         this.x =x;
         this.y = y;
         this.tex = tex;
+        this.scaleX = scaleX;
+        this.scaleY = scaleY;
         calcVerts();
     }
 
     private void calcVerts()
     {
-        float upperX = TetriJ.WINDOW_WIDTH / tex.getWidth() + x;
-        float upperY = TetriJ.WINDOW_HEIGHT / tex.getHeight() + y;
+        float upperX = (float)tex.getWidth()/(float) TetriJ.WINDOW_WIDTH*scaleX + x;
+        float upperY = (float) tex.getHeight()/ (float) TetriJ.WINDOW_HEIGHT*scaleY + y;
 
         float[] verts = {
                 -upperX,upperY,0,
@@ -103,6 +108,23 @@ public class GameSprite implements IDrawable {
         glBufferData(GL_ARRAY_BUFFER,vertices,GL_STATIC_DRAW);
         glBindBuffer(GL_ARRAY_BUFFER,Renderer.getInstance().getTbao());
         glBufferData(GL_ARRAY_BUFFER,texCoords,GL_STATIC_DRAW);
+        glActiveTexture(GL_TEXTURE0);
+        glBindTexture(GL_TEXTURE_2D,texId);
+        glUniform1i(Renderer.getInstance().getTexSamplerId(),0);
+
+        glEnableVertexAttribArray(0);
+
+        glBindBuffer(GL_ARRAY_BUFFER,Renderer.getInstance().getBao());
+        glVertexAttribPointer(0,3,GL_FLOAT,false,0,0);
+        //glDisableVertexAttribArray(0);
+        glEnableVertexAttribArray(1);
+        glBindBuffer(GL_ARRAY_BUFFER,Renderer.getInstance().getTbao());
+        glVertexAttribPointer(1,2,GL_FLOAT,false,0,0);
+        //glDisableVertexAttribArray(1);
+        glDrawArrays(GL_TRIANGLES,0,3*2*Renderer.getInstance().getSpriteAmount());
+        glDisableVertexAttribArray(0);
+        glDisableVertexAttribArray(1);
+
     }
 
 
