@@ -1,7 +1,5 @@
 package at.theOnlyHorst.tetrij.renderer;
 
-import org.lwjgl.BufferUtils;
-
 import java.nio.ByteBuffer;
 
 public class Texture {

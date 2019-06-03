@@ -4,6 +4,7 @@ import at.theOnlyHorst.tetrij.engine.GameEngine;
 import at.theOnlyHorst.tetrij.engine.ResourceManager;
 import at.theOnlyHorst.tetrij.gameTasks.FPSCounter;
 import at.theOnlyHorst.tetrij.gameTasks.RenderScreen;
+import at.theOnlyHorst.tetrij.renderer.Screen;
 import org.joml.Matrix4f;
 import org.lwjgl.glfw.GLFWErrorCallback;
 import org.lwjgl.opengl.GL;
@@ -14,6 +15,8 @@ import org.xml.sax.SAXException;
 
 import javax.xml.parsers.ParserConfigurationException;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 import static org.lwjgl.glfw.GLFW.*;
 import static org.lwjgl.opengl.GL11.*;
@@ -27,8 +30,8 @@ public class TetriJ implements Runnable {
     private static TetriJ mainGame;
     public static long window;
 
-    public static final int WINDOW_WIDTH = 700;
-    public static final int WINDOW_HEIGHT = 700;
+    public static final int WINDOW_WIDTH = 512;
+    public static final int WINDOW_HEIGHT = 512;
 
     private static boolean requiredRerender;
 
@@ -37,6 +40,9 @@ public class TetriJ implements Runnable {
     private boolean running;
 
     private Thread thread;
+    private Screen activeScreen;
+
+    private final List<Screen> screens = new ArrayList<>();
 
     private GameEngine engine;
     private static final int MS_PER_UPDATE = 16;
@@ -57,7 +63,7 @@ public class TetriJ implements Runnable {
         mainGame.start();
     }
 
-    public TetriJ()
+    private TetriJ()
     {
 
     }
@@ -212,7 +218,6 @@ public class TetriJ implements Runnable {
             {
                 running = false;
             }
-            //sleep(start + MS_PER_FRAME - System.currentTimeMillis());
         }
 
     }
@@ -237,19 +242,19 @@ public class TetriJ implements Runnable {
         return requiredRerender;
     }
 
-    private void sleep(long milis)
-    {
-        if(milis<0)
-        {
-            return;
-        }
-        try {
-            Thread.sleep(milis);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
-    }
     public int getShaderProg() {
         return shaderProg;
+    }
+
+    public Screen getActiveScreen() {
+        return activeScreen;
+    }
+
+    public void setActiveScreen(Screen activeScreen) {
+        this.activeScreen = activeScreen;
+    }
+
+    public List<Screen> getScreens() {
+        return screens;
     }
 }
