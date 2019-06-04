@@ -2,13 +2,20 @@ package at.theOnlyHorst.tetrij;
 
 import at.theOnlyHorst.tetrij.engine.GameEngine;
 import at.theOnlyHorst.tetrij.engine.ResourceManager;
+import at.theOnlyHorst.tetrij.gameObjects.GameSprite;
+import at.theOnlyHorst.tetrij.gameObjects.tetrij.Grid;
+import at.theOnlyHorst.tetrij.gameObjects.tetrij.Mino;
+import at.theOnlyHorst.tetrij.gameObjects.tetrij.TetriMino;
 import at.theOnlyHorst.tetrij.gameTasks.FPSCounter;
+import at.theOnlyHorst.tetrij.gameTasks.QueueVertRecalc;
 import at.theOnlyHorst.tetrij.gameTasks.RenderScreen;
-import at.theOnlyHorst.tetrij.renderer.GameSprite;
+import at.theOnlyHorst.tetrij.gameTasks.UpdateMinoPos;
 import at.theOnlyHorst.tetrij.renderer.Renderer;
 import at.theOnlyHorst.tetrij.renderer.Screen;
+import at.theOnlyHorst.tetrij.util.Bag;
+import at.theOnlyHorst.tetrij.util.RNG;
 import org.joml.Matrix4f;
-import org.lwjgl.glfw.GLFWErrorCallback;
+import org.lwjgl.glfw.GLFWWindowSizeCallback;
 import org.lwjgl.opengl.GL;
 import org.lwjgl.opengl.GL30;
 import org.lwjgl.opengl.GLUtil;
@@ -22,19 +29,17 @@ import java.util.List;
 
 import static org.lwjgl.glfw.Callbacks.glfwFreeCallbacks;
 import static org.lwjgl.glfw.GLFW.*;
-import static org.lwjgl.opengl.GL11.*;
 import static org.lwjgl.opengl.GL20.*;
 import static org.lwjgl.opengl.GL30.glBindVertexArray;
 import static org.lwjgl.opengl.GL30.glGenVertexArrays;
-import static org.lwjgl.opengl.GL40.GL_TRUE;
 
 public class TetriJ {
 
     private static TetriJ mainGame;
     public static long window;
 
-    public static final int WINDOW_WIDTH = 512;
-    public static final int WINDOW_HEIGHT = 512;
+    public static int WINDOW_WIDTH = 512;
+    public static int WINDOW_HEIGHT = 512;
 
     private static boolean requiredRerender;
 
@@ -45,10 +50,14 @@ public class TetriJ {
     private Thread thread;
     private Screen activeScreen;
 
+    public static final RNG rng = new RNG();
+
     private final List<Screen> screens = new ArrayList<>();
 
     private GameEngine engine;
     private static final int MS_PER_UPDATE = 16;
+
+    private Grid grid;
 
 
 
@@ -97,8 +106,11 @@ public class TetriJ {
 
 
         //GameEngine.addLogicTask(new TickCounter());
-        GameEngine.addRenderTask(new FPSCounter());
+        //GameEngine.addRenderTask(new FPSCounter());
+        GameEngine.addLogicTask(new UpdateMinoPos());
         GameEngine.addRenderTask(new RenderScreen());
+        GameEngine.addLogicTask(new QueueVertRecalc());
+
 
 
         if(!glfwInit())
@@ -106,11 +118,14 @@ public class TetriJ {
 
             return;
         }
-        glfwWindowHint(GLFW_RESIZABLE, GL_TRUE);
+        glfwWindowHint(GLFW_RESIZABLE, GL_FALSE);
         glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
         glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
         glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
         glfwWindowHint(GLFW_OPENGL_DEBUG_CONTEXT, GLFW_TRUE);
+
+        Mino.loadMinoTextures();
+
 
 
         window = glfwCreateWindow(WINDOW_WIDTH, WINDOW_HEIGHT, "TetriJ", 0, 0);
@@ -121,12 +136,26 @@ public class TetriJ {
 
         glfwMakeContextCurrent(window);
         glfwShowWindow(window);
+        glfwSetWindowSizeCallback(window, new GLFWWindowSizeCallback() {
+            @Override
+            public void invoke(long window, int width, int height) {
+                WINDOW_WIDTH = width;
+                WINDOW_HEIGHT = height;
+                processResize();
+            }
+        });
+
+
         GL.createCapabilities();
 
         Callback debugProc = GLUtil.setupDebugMessageCallback(); // may return null if the debug mode is not available
 
+
+
         Screen main = new Screen(1);
-        main.getSpriteList().add(new GameSprite(0,0,0.5f,0.5f,ResourceManager.getTexture("bgGrid")));
+        grid = new Grid(main);
+        Bag.initBags();
+        grid.spawnTetriMino(Bag.getCurrentPiece());
         TetriJ.getTetriJ().activeScreen = main;
 
 // cleanup
@@ -146,6 +175,7 @@ public class TetriJ {
         shaderProg = loadShaders();
 
         glUseProgram(shaderProg);
+
 
 
 
@@ -265,5 +295,15 @@ public class TetriJ {
 
     public List<Screen> getScreens() {
         return screens;
+    }
+
+    private void processResize()
+    {
+        GL30.glViewport(0,0,WINDOW_WIDTH,WINDOW_HEIGHT);
+        Renderer.recalculateBounds();
+    }
+
+    public Grid getGrid() {
+        return grid;
     }
 }

@@ -71,16 +71,15 @@ public class DDSParser {
 
             byte[] ddsDataBytes = new byte[bufsize];
 
-            is.read(ddsDataBytes);
-            ByteBuffer ddsDataBB = newByteBuffer(ddsDataBytes);
+
 
             System.out.println(is.available());
 
+            is.read(ddsDataBytes);
 
 
 
-
-            return new Texture(dwHeight,dwWidth,dwPitchOrLinearSize,dwMipMapCount,glDXTF, ddsDataBB);
+            return new Texture(dwHeight,dwWidth,dwPitchOrLinearSize,dwMipMapCount,glDXTF, ddsDataBytes);
 
 
         } catch (IOException e) {

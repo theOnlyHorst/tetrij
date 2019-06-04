@@ -6,6 +6,13 @@
     </Shaders>
     <Textures path="textures/">
         <Resource name="bgGrid" path="bg_grid.DDS"/>
+        <Resource name="minoPinkBasic" path="MinoPinkBasic.DDS"/>
+        <Resource name="minoBlueBasic" path="MinoBlueBasic.DDS"/>
+        <Resource name="minoCyanBasic" path="MinoCyanBasic.DDS"/>
+        <Resource name="minoGreenBasic" path="MinoGreenBasic.DDS"/>
+        <Resource name="minoOrangeBasic" path="MinoOrangeBasic.DDS"/>
+        <Resource name="minoRedBasic" path="MinoRedBasic.DDS"/>
+        <Resource name="minoYellowBasic" path="MinoYellowBasic.DDS"/>
     </Textures>
 
 

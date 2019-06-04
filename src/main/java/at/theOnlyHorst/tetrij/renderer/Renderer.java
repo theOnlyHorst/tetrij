@@ -1,8 +1,8 @@
 package at.theOnlyHorst.tetrij.renderer;
 
+import at.theOnlyHorst.tetrij.gameObjects.GameSprite;
+
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 
 public class Renderer {
@@ -11,15 +11,15 @@ public class Renderer {
 
     private List<GameSprite> activeSprites;
 
-    private int bao;
+    private List<GameSprite> queuedSprites;
 
-    private int tbao;
 
-    private int texSamplerId;
+
 
     private Renderer()
     {
         activeSprites = new ArrayList<>();
+        queuedSprites = new ArrayList<>();
     }
 
     public static void createRenderer()
@@ -37,44 +37,36 @@ public class Renderer {
 
     public void queueSprite(GameSprite sprite)
     {
-        activeSprites.add(sprite);
+        if(activeSprites.contains(sprite)||queuedSprites.contains(sprite))
+        {
+            return;
+        }
+        queuedSprites.add(sprite);
     }
 
     public void clearScreen()
     {
         activeSprites.clear();
+        queuedSprites.clear();
     }
 
-    public int getBao() {
-        return bao;
-    }
 
-    public void setBao(int bao) {
-        this.bao = bao;
-    }
 
-    public int getTbao() {
-        return tbao;
-    }
-
-    public void setTbao(int tbao) {
-        this.tbao = tbao;
-    }
-
-    public int getSpriteAmount()
-    {
-        return activeSprites.size();
-    }
-
-    public int getTexSamplerId() {
-        return texSamplerId;
-    }
-
-    public void setTexSamplerId(int texSamplerId) {
-        this.texSamplerId = texSamplerId;
-    }
     public void render()
     {
+        queuedSprites.forEach(gameSprite ->
+        {
+            gameSprite.init();
+            activeSprites.add(gameSprite);
+        });
+        queuedSprites.clear();
         activeSprites.forEach(GameSprite::draw);
     }
+
+    public static void recalculateBounds()
+    {
+        instance.activeSprites.forEach(GameSprite::onRecalculate);
+    }
+
+
 }

@@ -112,7 +112,10 @@ public class ResourceManager {
         return shaders.get(name);
     }
 
-    public static Texture getTexture(String name) {return textures.get(name);}
+    public static Texture getTexture(String name) {
+        System.out.println(name);
+        return textures.get(name);
+    }
 
 
 }

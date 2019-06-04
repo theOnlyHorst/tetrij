@@ -10,10 +10,10 @@ public class Texture {
     private int mipMapCount;
     private int glTXTF;
 
-    private ByteBuffer texData;
+    private byte[] texData;
 
 
-    public Texture(int height, int width, int linearSize, int mipMapCount, int glTXTF, ByteBuffer texData) {
+    public Texture(int height, int width, int linearSize, int mipMapCount, int glTXTF, byte[] texData) {
         this.height = height;
         this.width = width;
         this.linearSize = linearSize;
@@ -43,7 +43,7 @@ public class Texture {
         return glTXTF;
     }
 
-    public ByteBuffer getTexData() {
+    public byte[] getTexData() {
         return texData;
     }
 }

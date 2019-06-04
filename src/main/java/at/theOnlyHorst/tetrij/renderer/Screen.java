@@ -1,5 +1,7 @@
 package at.theOnlyHorst.tetrij.renderer;
 
+import at.theOnlyHorst.tetrij.gameObjects.GameSprite;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -20,5 +22,6 @@ public class Screen
     }
 
 
-    public void draw() {spriteList.forEach(sprite -> {Renderer.getInstance().queueSprite(sprite);sprite.init();});}
+    public void redraw() {spriteList.forEach(sprite -> {Renderer.getInstance().queueSprite(sprite);});}
+
 }
