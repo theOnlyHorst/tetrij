@@ -1,5 +1,6 @@
 package at.theOnlyHorst.tetrij.gameObjects.tetrij;
 
+import at.theOnlyHorst.tetrij.TetriJ;
 import at.theOnlyHorst.tetrij.engine.ResourceManager;
 import at.theOnlyHorst.tetrij.gameObjects.GameSprite;
 import at.theOnlyHorst.tetrij.renderer.Screen;
@@ -12,6 +13,8 @@ import java.util.Map;
 public class Grid extends GameSprite {
 
     private Map<Integer,Mino> gridMap;
+
+
 
 
     private static final float GRID_POS_X_0 = -0.3361f;
@@ -88,6 +91,8 @@ public class Grid extends GameSprite {
 
     public void moveTetriMino(int gridPos)
     {
+        if(activeTetriMino==null)
+            return;
         List<Mino> minoList = activeTetriMino.getAllMinos();
         List<Integer> relPos = activeTetriMino.getTemplate().getRelPosList();
         List<Integer> minoPoses = new ArrayList<>();
@@ -97,16 +102,28 @@ public class Grid extends GameSprite {
             minoPoses.add(minoPos);
 
         }
+        int move = gridPos-activeTetriMinoGridPos;
+
+        if(!(move==1||move==-1||move==10))
+            return;
+
         boolean allowedMove = true;
-        for(Integer x :minoPoses)
-        {
-            if(x<0||x>MAX_FIELD||(activeTetriMinoGridPos%10==0&&x%10==9)||(activeTetriMinoGridPos%10==9&&x%10==0))
-            {
-                allowedMove = false;
-                break;
+        if(move==-1||move==1) {
+
+            for (Integer x : minoPoses) {
+                if ((activeTetriMinoGridPos % 10 == 0 && x % 10 == 9) || (activeTetriMinoGridPos % 10 == 9 && x % 10 == 0)) {
+                    allowedMove = false;
+                    break;
+                }
             }
         }
-
+        else
+        {
+            if(tetriMinoHasHitGround())
+            {
+                return;
+            }
+        }
         if(allowedMove)
         {
             for(int i =0; i<minoList.size();i++)
@@ -130,6 +147,8 @@ public class Grid extends GameSprite {
 
     public boolean tetriMinoHasHitGround(int onPos)
     {
+        if(activeTetriMino==null)
+            return false;
         boolean minoBelow;
 
         minoBelow = gridMap.get(onPos+10)!=null;
@@ -143,14 +162,21 @@ public class Grid extends GameSprite {
 
 
 
-    public void spawnTetriMino(TetriMinoTemplate tetriMino)
+    public boolean spawnTetriMino(TetriMinoTemplate tetriMino)
     {
+        if(TetriJ.isGameOver())
+            return false;
         if(activeTetriMino==null) {
             activeTetriMino = TetriMino.createTetrimino(14, tetriMino);
+            if(gridMap.get(14)!=null||gridMap.get(14+activeTetriMino.getRelPosMin2())!=null||gridMap.get(14+activeTetriMino.getRelPosMin3())!=null||gridMap.get(14+activeTetriMino.getRelPosMin4())!=null) {
+                TetriJ.queueGameOver();
+            }
             displayScreen.getSpriteList().addAll(activeTetriMino.getAllMinos());
             displayScreen.redraw();
             activeTetriMinoGridPos = 14;
+            return true;
         }
+        return false;
     }
 
     public void lockTetriMinoOnGrid()
@@ -159,7 +185,12 @@ public class Grid extends GameSprite {
         gridMap.put(activeTetriMinoGridPos+activeTetriMino.getRelPosMin2(),activeTetriMino.getMino2());
         gridMap.put(activeTetriMinoGridPos+activeTetriMino.getRelPosMin3(),activeTetriMino.getMino3());
         gridMap.put(activeTetriMinoGridPos+activeTetriMino.getRelPosMin4(),activeTetriMino.getMino4());
+        if(activeTetriMinoGridPos<20&&activeTetriMinoGridPos+activeTetriMino.getRelPosMin2()<20&&activeTetriMino.getRelPosMin3()+activeTetriMinoGridPos<20&&activeTetriMino.getRelPosMin4()+activeTetriMinoGridPos<20)
+        {
+            TetriJ.queueGameOver();
+        }
         activeTetriMino = null;
     }
+
 
 }

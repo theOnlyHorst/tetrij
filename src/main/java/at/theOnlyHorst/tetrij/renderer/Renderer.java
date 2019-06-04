@@ -13,6 +13,8 @@ public class Renderer {
 
     private List<GameSprite> queuedSprites;
 
+    private List<GameSprite> toRemSprites;
+
 
 
 
@@ -20,6 +22,7 @@ public class Renderer {
     {
         activeSprites = new ArrayList<>();
         queuedSprites = new ArrayList<>();
+        toRemSprites = new ArrayList<>();
     }
 
     public static void createRenderer()
@@ -46,8 +49,9 @@ public class Renderer {
 
     public void clearScreen()
     {
-        activeSprites.clear();
+        toRemSprites.addAll(activeSprites);
         queuedSprites.clear();
+
     }
 
 
@@ -61,6 +65,7 @@ public class Renderer {
         });
         queuedSprites.clear();
         activeSprites.forEach(GameSprite::draw);
+        activeSprites.removeAll(toRemSprites);
     }
 
     public static void recalculateBounds()

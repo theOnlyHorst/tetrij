@@ -25,6 +25,7 @@ import org.xml.sax.SAXException;
 import javax.xml.parsers.ParserConfigurationException;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import static org.lwjgl.glfw.Callbacks.glfwFreeCallbacks;
@@ -57,6 +58,8 @@ public class TetriJ {
     private GameEngine engine;
     private static final int MS_PER_UPDATE = 16;
 
+    private static boolean gameOver;
+
     private Grid grid;
 
 
@@ -78,6 +81,10 @@ public class TetriJ {
     private TetriJ()
     {
 
+    }
+
+    public static boolean isGameOver() {
+        return gameOver;
     }
 
     public void start()
@@ -107,7 +114,7 @@ public class TetriJ {
 
         //GameEngine.addLogicTask(new TickCounter());
         //GameEngine.addRenderTask(new FPSCounter());
-        GameEngine.addLogicTask(new UpdateMinoPos());
+
         GameEngine.addRenderTask(new RenderScreen());
         GameEngine.addLogicTask(new QueueVertRecalc());
 
@@ -150,13 +157,14 @@ public class TetriJ {
 
         Callback debugProc = GLUtil.setupDebugMessageCallback(); // may return null if the debug mode is not available
 
-
-
-        Screen main = new Screen(1);
+        Screen main = new Screen(0);
+        Screen gameOver = new Screen(1);
+        getTetriJ().screens.addAll(Arrays.asList(main,gameOver));
+        main.addScreenTasks(new UpdateMinoPos());
         grid = new Grid(main);
         Bag.initBags();
         grid.spawnTetriMino(Bag.getCurrentPiece());
-        TetriJ.getTetriJ().activeScreen = main;
+        TetriJ.getTetriJ().setActiveScreen(0);
 
 // cleanup
         if ( debugProc == null ) {
@@ -289,8 +297,11 @@ public class TetriJ {
         return activeScreen;
     }
 
-    public void setActiveScreen(Screen activeScreen) {
-        this.activeScreen = activeScreen;
+    public void setActiveScreen(int activeScreen) {
+
+        if(this.activeScreen!=null)
+            this.activeScreen.clean();
+        this.activeScreen = screens.get(activeScreen);
     }
 
     public List<Screen> getScreens() {
@@ -305,5 +316,11 @@ public class TetriJ {
 
     public Grid getGrid() {
         return grid;
+    }
+
+    public static void queueGameOver()
+    {
+        gameOver =true;
+        //getTetriJ().setActiveScreen(1);
     }
 }

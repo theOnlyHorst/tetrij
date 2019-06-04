@@ -7,6 +7,7 @@ import at.theOnlyHorst.tetrij.gameTasks.LogicTask;
 import at.theOnlyHorst.tetrij.gameTasks.RenderTask;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import static org.lwjgl.glfw.GLFW.glfwPollEvents;
@@ -18,7 +19,7 @@ public class GameEngine {
 
     private  List<AbstractRenderTask> renderTasks;
 
-
+    private  List<AbstractLogicTask> toRemLogicTasks;
 
     private static GameEngine instance;
 
@@ -26,6 +27,7 @@ public class GameEngine {
     {
         logicTasks = new ArrayList<>();
         renderTasks = new ArrayList<>();
+        toRemLogicTasks = new ArrayList<>();
     }
 
     public static GameEngine initEngine()
@@ -40,7 +42,13 @@ public class GameEngine {
     {
         instance.logicTasks.add(task);
     }
-
+    public static void addLogicTasks(AbstractLogicTask... tasks)
+    {
+        instance.logicTasks.addAll(Arrays.asList(tasks));
+    }
+    public static void removeLogicTasks(AbstractLogicTask... tasks) {
+        instance.toRemLogicTasks.addAll(Arrays.asList(tasks));
+    }
     public static void addRenderTask(AbstractRenderTask task)
     {
         instance.renderTasks.add(task);
@@ -50,6 +58,10 @@ public class GameEngine {
     {
         glfwPollEvents();
         logicTasks.forEach(AbstractLogicTask::run);
+        if(toRemLogicTasks.size()>0) {
+            logicTasks.removeAll(toRemLogicTasks);
+            toRemLogicTasks.clear();
+        }
     }
 
 
